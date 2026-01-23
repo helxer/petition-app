@@ -1,0 +1,58 @@
+<?php
+
+namespace App\Jobs;
+
+use App\Models\Petition;
+use App\Models\PetitionVote;
+use App\Services\VoterParserService;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+class ProcessPetitionPageJob implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+
+    public $tries = 3;
+    public $backoff = 60;
+
+    public function __construct(
+        protected int $petitionId,
+        protected int $pageNumber
+    ) {}
+
+    public function handle(VoterParserService $parser): void
+    {
+        $petition = Petition::where('petition_id', $this->petitionId)->firstOrFail();
+
+        $url = "https://petition.president.gov.ua/petition/{$this->petitionId}/votes/{$this->pageNumber}/json";
+
+        $response = Http::withHeaders([
+            'X-Requested-With' => 'XMLHttpRequest',
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36'
+        ])->get($url);
+
+        if ($response->failed()) {
+            Log::error("Failed to fetch page {$this->pageNumber} for petition {$this->petitionId}");
+            $this->release($this->backoff);
+            return;
+        }
+
+        $voters = $parser->parseVoters($response->body());
+
+        foreach ($voters as $voter) {
+            PetitionVote::updateOrCreate(
+                ['petition_id' => $this->petitionId, 'full_name'   => $voter['full_name']],
+                ['voted_at' => $voter['voted_at']]
+            );
+        }
+
+        if ($petition->processed_pages < $petition->total_pages + 1 - $this->pageNumber) {
+            $petition->increment('processed_pages');
+        }
+    }
+}
