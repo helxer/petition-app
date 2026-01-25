@@ -16,6 +16,13 @@ import { Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend);
 
+const isOldEnough = (createdAt) => {
+    const createdDate = new Date(createdAt);
+    const fiveMinutesInMs = 5 * 60 * 1000;
+
+    return (createdDate.getTime() + fiveMinutesInMs) < Date.now();
+};
+
 export default function Show({ petition, chartData, latestVotes, filters }: any) {
     const [search, setSearch] = useState(filters.search || '');
     const [loading, setLoading] = useState(false);
@@ -83,26 +90,28 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
                         <a href={`https://petition.president.gov.ua/petition/${petition.petition_id}`} className="text-2xl font-bold text-slate-900" target="_blank">
                             {petition.title}
                         </a>
-                        <div className="flex flex-col justify-center">
-                            <button
-                                onClick={handleRefresh}
-                                disabled={loading}
-                                className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-nowrap text-white transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50"
-                            >
-                                <svg className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                                    />
-                                </svg>
-                                {loading ? 'Оновлення...' : 'Оновити дані'}
-                            </button>
-                            <p className="mt-1 font-mono text-xs tracking-widest text-nowrap text-slate-400 uppercase">
-                                {new Date(petition.updated_at).toLocaleString('uk-UA')}
-                            </p>
-                        </div>
+                        {isOldEnough(petition.created_at) && (
+                            <div className="flex flex-col justify-center">
+                                <button
+                                    onClick={handleRefresh}
+                                    disabled={loading}
+                                    className="flex items-center gap-2 rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-bold text-nowrap text-white transition-all hover:bg-blue-700 active:scale-95 disabled:opacity-50"
+                                >
+                                    <svg className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                                        />
+                                    </svg>
+                                    {loading ? 'Оновлення...' : 'Оновити дані'}
+                                </button>
+                                <p className="mt-1 font-mono text-xs tracking-widest text-nowrap text-slate-400 uppercase">
+                                    {new Date(petition.updated_at).toLocaleString('uk-UA')}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-6 border-y border-slate-100 py-6 md:grid-cols-4">
