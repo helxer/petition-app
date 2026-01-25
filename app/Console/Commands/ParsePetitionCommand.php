@@ -44,36 +44,30 @@ class ParsePetitionCommand extends Command
 
         $existingPetition = Petition::where('petition_id', $petitionId)->first();
         $oldTotalPages = $existingPetition ? $existingPetition->total_pages : 0;
-        $oldProcessedPages = $existingPetition ? $existingPetition->processed_pages : 0;
 
         $petition = Petition::updateOrCreate(
             ['petition_id' => $petitionId],
             array_merge($meta, [
                 'total_pages'     => $lastPage,
-                'processed_pages' => $oldProcessedPages,
             ])
         );
 
         $this->info("Петиція: {$petition->title}");
         $this->info("Автор: {$petition->author}");
         $this->info("Голосів на сайті: {$petition->votes_count}");
-        $this->info("Знайдено сторінок: $lastPage. Додаю завдання в чергу...");
+        $this->info("Знайдено сторінок: $lastPage.");
+
 
         if ($oldTotalPages === 0) {
             $this->info("Перший запуск. Додаю всі сторінки ($lastPage)...");
             $pagesToDispatch = range(1, $lastPage);
         } else {
-            $frontPages = range(1, min(1, $lastPage));
-
-            $newPages = [];
-            if ($lastPage > $oldTotalPages) {
-                $newPages = range($oldTotalPages + 1, $lastPage);
-                $this->info("Знайдено " . count($newPages) . " нових сторінок.");
-            }
-
-            $pagesToDispatch = array_unique(array_merge($frontPages, $newPages));
-            sort($pagesToDispatch);
+            $newLastPage = $lastPage - $oldTotalPages + 1;
+            $this->info("Знайдено " . $newLastPage . " нових сторінок.");
+            $pagesToDispatch = range(1, $newLastPage);
         }
+
+        $pagesToDispatch = array_reverse($pagesToDispatch);
 
         $bar = $this->output->createProgressBar(count($pagesToDispatch));
         $bar->start();

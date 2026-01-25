@@ -50,9 +50,5 @@ class ProcessPetitionPageJob implements ShouldQueue
                 ['voted_at' => $voter['voted_at']]
             );
         }
-
-        if ($petition->processed_pages < $petition->total_pages + 1 - $this->pageNumber) {
-            $petition->increment('processed_pages');
-        }
     }
 }
