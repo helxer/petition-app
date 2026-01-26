@@ -9,6 +9,22 @@ use Inertia\Inertia;
 
 class PetitionController extends Controller
 {
+    public function index(Request $request)
+    {
+        $petitions = Petition::withCount('votes')
+            ->when($request->search, function($query, $search) {
+                $query->where('title', 'like', "%{$search}%")
+                    ->orWhere('petition_id', 'like', "%{$search}%");
+            })
+            ->orderBy('updated_at', 'desc')
+            ->paginate(12)
+            ->withQueryString();
+
+        return Inertia::render('Petitions/Index', [
+            'petitions' => $petitions,
+            'filters' => $request->only(['search'])
+        ]);
+    }
     public function check(Request $request)
     {
         $request->validate(['petition_id' => 'required|integer']);
