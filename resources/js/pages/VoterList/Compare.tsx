@@ -51,7 +51,7 @@ export default function Compare({ petition, targetUser, voters, stats }: any) {
                             <input
                                 type="text"
                                 placeholder="Швидкий пошук по вашому списку (ПІБ)..."
-                                className="w-full rounded-xl border-slate-200 py-4 pl-12 pr-4 shadow-md focus:ring-2 focus:ring-blue-500 transition-all text-lg"
+                                className="w-full rounded-xl bg-white border-slate-200 py-4 pl-12 pr-4 shadow-md focus:ring-2 focus:ring-blue-500 transition-all text-lg"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
