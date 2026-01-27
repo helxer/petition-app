@@ -53,9 +53,10 @@ class PetitionController extends Controller
         $petition = Petition::where('petition_id', $petition_id)->firstOrFail();
 
         $chartData = $petition->voters()
-            ->selectRaw('petition_voter.voted_at, count(*) as count')
+            ->selectRaw('petition_voter.voted_at as x, count(*) as y')
             ->groupBy('petition_voter.voted_at')
-            ->orderBy('petition_voter.voted_at', 'asc')
+            ->getQuery()
+            ->orderBy('x', 'asc')
             ->get()
             ->map(fn($item) => [
                 'x' => $item->voted_at,
