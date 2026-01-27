@@ -15,6 +15,7 @@
         "laravel/pulse": "^1.5",
         "laravel/tinker": "^2.10.1",
         "laravel/wayfinder": "^0.1.11",
+        "opcodesio/log-viewer": "^3.21",
         "symfony/css-selector": "^7.0",
         "symfony/dom-crawler": "^7.0"
     },
