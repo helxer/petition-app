@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'current_petition_id',
     ];
 
     /**
@@ -31,6 +32,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'current_petition_id'
     ];
 
     /**
@@ -44,5 +46,15 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function currentPetition()
+    {
+        return $this->belongsTo(Petition::class, 'current_petition_id', 'petition_id');
+    }
+
+    public function voterList()
+    {
+        return $this->hasOne(VoterList::class);
     }
 }

@@ -44,12 +44,30 @@ class ProcessPetitionPageJob implements ShouldQueue
 
         $parsedVoters = $parser->parseVoters($response->body());
 
-        foreach ($parsedVoters as $parsedVoter) {
-            $voter = Voter::firstOrCreate(['full_name' => $parsedVoter['full_name']]);
+        $fullNames = collect($parsedVoters)->pluck('full_name')->unique()->toArray();
 
-            $petition->voters()->syncWithoutDetaching([
-                $voter->id => ['voted_at' => $parsedVoter['voted_at']]
-            ]);
+        Voter::upsert(
+            collect($fullNames)->map(fn($name) => ['full_name' => $name])->toArray(),
+            ['full_name'],
+            ['full_name']
+        );
+
+        $votersMap = Voter::whereIn('full_name', $fullNames)->pluck('id', 'full_name');
+
+        $syncData = [];
+        foreach ($parsedVoters as $parsedVoter) {
+            $voterId = $votersMap[$parsedVoter['full_name']];
+            $syncData[$voterId] = ['voted_at' => $parsedVoter['voted_at']];
         }
+
+        $petition->voters()->syncWithoutDetaching($syncData);
+
+//        foreach ($parsedVoters as $parsedVoter) {
+//            $voter = Voter::firstOrCreate(['full_name' => $parsedVoter['full_name']]);
+//
+//            $petition->voters()->syncWithoutDetaching([
+//                $voter->id => ['voted_at' => $parsedVoter['voted_at']]
+//            ]);
+//        }
     }
 }

@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     CategoryScale,
     Chart as ChartJS,
@@ -13,18 +13,19 @@ import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import { show, refresh } from '@/actions/App/Http/Controllers/PetitionController';
-import { formatDate } from '@/lib/utils';
+import { compare } from '@/actions/App/Http/Controllers/VoterListController';
 import MainLayout from '@/layouts/MainLayout';
+import { formatDate } from '@/lib/utils';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend);
 
-export default function Show({ petition, chartData, latestVotes, filters, isProcessing }: any) {
+export default function Show({ auth, petition, chartData, latestVotes, filters, voterListStats, isProcessing }: any) {
     const [search, setSearch] = useState(filters.search || '');
     const [loading, setLoading] = useState(false);
     const [pollingInterval, setPollingInterval] = useState(5 * 60 * 1000);
 
     useEffect(() => {
-        const nextInterval = isProcessing ? 3000 : 5 * 60 * 1000;
+        const nextInterval = isProcessing ? 10000 : 5 * 60 * 1000;
 
         if (pollingInterval !== nextInterval) {
             setPollingInterval(nextInterval);
@@ -85,9 +86,8 @@ export default function Show({ petition, chartData, latestVotes, filters, isProc
         <MainLayout>
             <div className="min-h-screen bg-slate-50 p-4 md:p-8">
                 <Head title={petition.title} />
-
                 <div className="mx-auto max-w-5xl space-y-6">
-                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-10">
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm md:p-10">
                         <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
                             <div className="flex-1">
                                 <a
@@ -147,7 +147,33 @@ export default function Show({ petition, chartData, latestVotes, filters, isProc
                         </div>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    {voterListStats && (
+                        <Link
+                            href={compare.url({ petition_id: petition.petition_id, user_id: auth.user.id })}
+                            className="flex justify-between items-center gap-4 bg-white border-2 border-blue-50 hover:border-blue-400 p-5 rounded-xl shadow-sm transition-all group shrink-0"
+                        >
+                            <div className="flex flex-row gap-4">
+                                <div className="bg-blue-600 text-white w-12 h-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
+                                    🎯
+                                </div>
+                                <div>
+                                    <div className="text-[10px] font-black uppercase text-slate-400 tracking-widest mb-1">Мій список</div>
+                                    <div className="text-2xl font-black text-slate-800 flex items-baseline gap-1">
+                                        {voterListStats.signed}
+                                        <span className="text-slate-300 text-sm">/</span>
+                                        <span className="text-slate-400 text-lg">{voterListStats.total}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="ml-2 text-blue-600 opacity-0 group-hover:opacity-100 transition-all translate-x-[-10px] group-hover:translate-x-0">
+                                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                        </Link>
+                    )}
+
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                         <h3 className="mb-4 px-2 text-lg font-bold text-slate-800">Динаміка голосування</h3>
                         <div className="h-[320px]">
                             <Line
@@ -164,7 +190,7 @@ export default function Show({ petition, chartData, latestVotes, filters, isProc
                         </div>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
                             <h3 className="px-2 text-lg font-bold text-slate-800">
                                 {search ? 'Результати пошуку' : 'Останні підписанти'}
@@ -180,7 +206,7 @@ export default function Show({ petition, chartData, latestVotes, filters, isProc
                             </div>
                         </div>
 
-                        <div className="overflow-hidden rounded-2xl border border-slate-100">
+                        <div className="overflow-hidden rounded-xl border border-slate-100">
                             <table className="w-full text-left text-sm">
                                 <thead className="bg-slate-50 text-[10px] font-bold tracking-wider text-slate-500 uppercase">
                                     <tr>
@@ -208,7 +234,7 @@ export default function Show({ petition, chartData, latestVotes, filters, isProc
                         </div>
                     </div>
 
-                    <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-10">
+                    <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm md:p-10">
                         <h3 className="mb-4 text-lg font-bold text-slate-800">Текст петиції</h3>
                         <div
                             className="prose prose-slate max-w-none leading-relaxed text-slate-600"

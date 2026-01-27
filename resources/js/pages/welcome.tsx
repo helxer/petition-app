@@ -18,7 +18,7 @@ export default function Welcome() {
             <div className="flex min-h-screen items-center justify-center bg-slate-50">
                 <Head title="Аналіз петицій" />
 
-                <div className="w-full max-w-md rounded-2xl bg-white p-8 shadow-sm border border-slate-200">
+                <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-sm border border-slate-200">
                     <h1 className="mb-6 text-2xl font-bold text-slate-800">Аналіз голосів петицій</h1>
 
                     <form onSubmit={submit} className="space-y-4">

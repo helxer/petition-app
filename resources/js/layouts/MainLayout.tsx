@@ -23,9 +23,24 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                             <Link href="/" className="text-xl font-black text-blue-600 tracking-tight">
                                 PETITION<span className="text-slate-800">TRACK</span>
                             </Link>
-                            <Link href="/petitions" className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors">
-                                Петиції
+                            <Link
+                                href="/petitions"
+                                className={`text-sm font-bold transition-colors ${
+                                    url.startsWith('/petitions') ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
+                                }`}
+                            >
+                                📊 Всі петиції
                             </Link>
+                            {auth.user && (
+                                <Link
+                                    href="/my-list/manage"
+                                    className={`text-sm font-bold transition-colors ${
+                                        url.startsWith('/my-list') ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
+                                    }`}
+                                >
+                                    🎯 Мій список
+                                </Link>
+                            )}
                         </div>
 
                         <div className="flex items-center gap-4">

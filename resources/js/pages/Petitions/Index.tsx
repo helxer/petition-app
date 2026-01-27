@@ -54,7 +54,7 @@ export default function Index({ petitions, filters }: any) {
                                 placeholder="Пошук за назвою або №..."
                                 value={search}
                                 onChange={onSearchChange}
-                                className="w-full rounded-2xl border-slate-200 bg-white px-5 py-3 shadow-sm focus:ring-2 focus:ring-blue-500 transition-all"
+                                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-4 bg-white focus:ring-blue-100 focus:border-blue-500 transition-all text-center text-xl font-mono"
                             />
                         </div>
                     </div>
@@ -64,7 +64,7 @@ export default function Index({ petitions, filters }: any) {
                             <Link
                                 key={petition.id}
                                 href={show.url({ petition_id: petition.petition_id })}
-                                className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group"
+                                className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group"
                             >
                                 <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter">
                                     ID: {petition.petition_id}

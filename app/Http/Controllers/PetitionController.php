@@ -51,6 +51,26 @@ class PetitionController extends Controller
     public function show(Request $request, $petition_id)
     {
         $petition = Petition::where('petition_id', $petition_id)->firstOrFail();
+        $user = auth()->user();
+
+        $voterListStats = null;
+        if ($user && $user->voterList) {
+            $totalInList = $user->voterList->voters()->count();
+
+            $signedInList = $user->voterList->voters()
+                ->whereExists(function ($query) use ($petition_id) {
+                    $query->select(DB::raw(1))
+                        ->from('petition_voter')
+                        ->whereColumn('petition_voter.voter_id', 'voters.id')
+                        ->where('petition_voter.petition_id', $petition_id);
+                })
+                ->count();
+
+            $voterListStats = [
+                'signed' => $signedInList,
+                'total' => $totalInList,
+            ];
+        }
 
         $chartData = $petition->voters()
             ->selectRaw('petition_voter.voted_at as x, count(*) as y')
@@ -86,6 +106,7 @@ class PetitionController extends Controller
             'chartData' => $chartData,
             'latestVotes' => $latestVotes,
             'isProcessing' => $isProcessing,
+            'voterListStats' => $voterListStats,
             'filters' => $request->only(['search'])
         ]);
     }
