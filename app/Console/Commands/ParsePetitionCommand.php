@@ -40,6 +40,13 @@ class ParsePetitionCommand extends Command
 
         $data = $jsonResponse->json();
         $meta = $parser->parseMetadata($htmlResponse->body());
+
+        if ($meta['title'] === '404. Такої сторінки не існує') {
+            $this->error('404. Такої сторінки не існує');
+            Petition::where('petition_id', $petitionId)->delete();
+            return Command::FAILURE;
+        }
+
         $lastPage = $parser->getLastPage($data['pag_html'] ?? '');
 
         $existingPetition = Petition::where('petition_id', $petitionId)->first();
@@ -51,6 +58,8 @@ class ParsePetitionCommand extends Command
                 'total_pages'     => $lastPage,
             ])
         );
+
+        $petition->touch();
 
         $this->info("Петиція: {$petition->title}");
         $this->info("Автор: {$petition->author}");

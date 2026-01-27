@@ -3,7 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\Petition;
-use App\Models\PetitionVote;
+use App\Models\Voter;
 use App\Services\VoterParserService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -42,13 +42,14 @@ class ProcessPetitionPageJob implements ShouldQueue
             return;
         }
 
-        $voters = $parser->parseVoters($response->body());
+        $parsedVoters = $parser->parseVoters($response->body());
 
-        foreach ($voters as $voter) {
-            PetitionVote::updateOrCreate(
-                ['petition_id' => $this->petitionId, 'full_name'   => $voter['full_name']],
-                ['voted_at' => $voter['voted_at']]
-            );
+        foreach ($parsedVoters as $parsedVoter) {
+            $voter = Voter::firstOrCreate(['full_name' => $parsedVoter['full_name']]);
+
+            $petition->voters()->syncWithoutDetaching([
+                $voter->id => ['voted_at' => $parsedVoter['voted_at']]
+            ]);
         }
     }
 }

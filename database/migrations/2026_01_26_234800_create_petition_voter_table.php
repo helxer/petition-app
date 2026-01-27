@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('petition_votes', function (Blueprint $table) {
+        Schema::create('petition_voter', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('petition_id');
-            $table->foreign('petition_id')
-                ->references('petition_id')
-                ->on('petitions')
-                ->onDelete('cascade');
-            $table->string('full_name');
+            $table->unsignedBigInteger('voter_id');
             $table->date('voted_at');
-            $table->timestamps();
-            $table->unique(['petition_id', 'full_name']);
+
+            $table->foreign('petition_id')->references('petition_id')->on('petitions')->onDelete('cascade');
+            $table->foreign('voter_id')->references('id')->on('voters')->onDelete('cascade');
+
+            $table->unique(['petition_id', 'voter_id']);
         });
     }
 
@@ -30,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('petition_votes');
+        Schema::dropIfExists('petition_voter');
     }
 };

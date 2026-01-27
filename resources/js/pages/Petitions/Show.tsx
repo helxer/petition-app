@@ -10,31 +10,36 @@ import {
     Tooltip,
 } from 'chart.js';
 import { debounce } from 'lodash';
-import { show, refresh } from '@/actions/App/Http/Controllers/PetitionController';
 import React, { useCallback, useEffect, useState } from 'react';
 import { Line } from 'react-chartjs-2';
+import { show, refresh } from '@/actions/App/Http/Controllers/PetitionController';
+import { formatDate } from '@/lib/utils';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend);
 
-const isOldEnough = (createdAt) => {
-    const createdDate = new Date(createdAt);
-    const fiveMinutesInMs = 5 * 60 * 1000;
-
-    return (createdDate.getTime() + fiveMinutesInMs) < Date.now();
-};
-
-export default function Show({ petition, chartData, latestVotes, filters }: any) {
+export default function Show({ petition, chartData, latestVotes, filters, isProcessing }: any) {
     const [search, setSearch] = useState(filters.search || '');
     const [loading, setLoading] = useState(false);
+    const [pollingInterval, setPollingInterval] = useState(5 * 60 * 1000);
 
-    // Polling: оновлюємо дані кожні 10 секунд
+    useEffect(() => {
+        const nextInterval = isProcessing ? 3000 : 5 * 60 * 1000;
+
+        if (pollingInterval !== nextInterval) {
+            setPollingInterval(nextInterval);
+        }
+    }, [isProcessing]);
+
     useEffect(() => {
         const interval = setInterval(() => {
-            const only = search ? ['petition', 'chartData'] : ['petition', 'chartData', 'latestVotes'];
-            router.reload({ only, preserveScroll: true });
-        }, 10000);
+            const only = search ? ['petition', 'chartData', 'isProcessing'] : ['petition', 'chartData', 'latestVotes', 'isProcessing'];
+            router.reload({
+                only,
+                preserveScroll: true
+            });
+        }, pollingInterval);
         return () => clearInterval(interval);
-    }, [search]);
+    }, [search, pollingInterval]);
 
     const handleSearch = useCallback(
         debounce((query: string) => {
@@ -53,12 +58,6 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
         handleSearch(value);
     };
 
-    // Форматування дати Y-m-d
-    const formatDate = (dateString: string) => {
-        if (!dateString) return '';
-        return new Date(dateString).toISOString().split('T')[0];
-    };
-
     const handleRefresh = () => {
         setLoading(true);
         router.post(refresh.url({ petition_id: petition.petition_id }), {}, {
@@ -68,14 +67,15 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
     };
 
     const data = {
-        labels: chartData.map((d: any) => formatDate(d.voted_at || d.x)),
+        labels: chartData.map((d: any) => formatDate(d.x)),
         datasets: [
             {
                 label: 'Голосів за день',
-                data: chartData.map((d: any) => d.count || d.y),
+                data: chartData.map((d: any) => d.y),
                 borderColor: 'rgb(59, 130, 246)',
                 backgroundColor: 'rgba(59, 130, 246, 0.5)',
                 tension: 0.3,
+                pointRadius: 4,
             },
         ],
     };
@@ -87,11 +87,20 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
             <div className="mx-auto max-w-5xl space-y-6">
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-10">
                     <div className="flex flex-col items-start justify-between gap-4 md:flex-row">
-                        <a href={`https://petition.president.gov.ua/petition/${petition.petition_id}`} className="text-2xl font-bold text-slate-900" target="_blank">
-                            {petition.title}
-                        </a>
-                        {isOldEnough(petition.created_at) && (
-                            <div className="flex flex-col justify-center">
+                        <div className="flex-1">
+                            <a
+                                href={`https://petition.president.gov.ua/petition/${petition.petition_id}`}
+                                className="text-2xl font-bold text-slate-900 hover:text-blue-600 transition-colors"
+                                target="_blank"
+                                rel="noreferrer"
+                            >
+                                {petition.title}
+                            </a>
+                        </div>
+
+                        {/* Кнопка активна тільки якщо зараз НЕ йде обробка в черзі */}
+                        {!isProcessing && (
+                            <div className="flex flex-col items-end">
                                 <button
                                     onClick={handleRefresh}
                                     disabled={loading}
@@ -105,10 +114,10 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
                                             d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
                                         />
                                     </svg>
-                                    {loading ? 'Оновлення...' : 'Оновити дані'}
+                                    {loading ? 'Оновлення...' : 'Оновити'}
                                 </button>
                                 <p className="mt-1 font-mono text-xs tracking-widest text-nowrap text-slate-400 uppercase">
-                                    {new Date(petition.updated_at).toLocaleString('uk-UA')}
+                                    {formatDate(petition.updated_at, true)}
                                 </p>
                             </div>
                         )}
@@ -120,30 +129,31 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
                             <p className="font-semibold text-nowrap text-slate-700">{petition.author}</p>
                         </div>
                         <div>
-                            <p className="text-center text-xs font-medium tracking-wider text-slate-400 uppercase">Голосів (сайт)</p>
+                            <p className="text-center text-xs font-medium tracking-wider text-slate-400 uppercase">Голосів</p>
                             <p className="text-center font-semibold text-blue-600">{petition.votes_count}</p>
                         </div>
                         <div>
-                            <p className="text-center text-xs font-medium tracking-wider text-slate-400 uppercase">Зібрано нами</p>
+                            <p className="text-center text-xs font-medium tracking-wider text-slate-400 uppercase">Зібрано</p>
                             <p className="text-center font-semibold text-green-600">
-                                {petition.votes_count_count ?? petition.total_votes_collected ?? 'рахуємо...'}
+                                {petition.total_votes_collected?.toLocaleString() ?? '...'}
                             </p>
                         </div>
-                        <div>
-                            <p className="text-right text-xs font-medium tracking-wider text-slate-400 uppercase">Оприлюднено</p>
-                            <p className="text-right font-semibold text-slate-700">{formatDate(petition.published_at)}</p>
+                        <div className="text-center md:text-right">
+                            <p className="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Оприлюднено</p>
+                            <p className="font-semibold text-slate-700">{formatDate(petition.published_at)}</p>
                         </div>
                     </div>
                 </div>
 
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <h3 className="mb-4 px-2 text-lg font-bold text-slate-800">Динаміка голосування</h3>
-                    <div className="h-[300px]">
+                    <div className="h-[320px]">
                         <Line
                             data={data}
                             options={{
                                 responsive: true,
                                 maintainAspectRatio: false,
+                                plugins: { legend: { display: false } },
                                 scales: {
                                     y: { beginAtZero: true, ticks: { precision: 0 } },
                                 },
@@ -154,15 +164,16 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
 
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
                     <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
-                        <h3 className="px-2 text-lg font-bold text-slate-800">{search ? 'Результати пошуку' : 'Останні голоси'}</h3>
-
+                        <h3 className="px-2 text-lg font-bold text-slate-800">
+                            {search ? 'Результати пошуку' : 'Останні підписанти'}
+                        </h3>
                         <div className="relative">
                             <input
                                 type="text"
                                 placeholder="Пошук підписанта..."
                                 value={search}
                                 onChange={onSearchChange}
-                                className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-2 text-sm focus:border-blue-500 focus:ring-blue-500 md:w-64"
+                                className="w-full rounded-xl border-slate-200 bg-slate-50 px-4 py-2.5 text-sm focus:border-blue-500 focus:ring-blue-500 md:w-64"
                             />
                         </div>
                     </div>
@@ -177,16 +188,16 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
                             </thead>
                             <tbody className="divide-y divide-slate-100">
                                 {latestVotes.length > 0 ? (
-                                    latestVotes.map((vote: any) => (
-                                        <tr key={vote.id} className="transition-colors hover:bg-slate-50">
-                                            <td className="px-6 py-4 font-medium text-slate-700">{vote.full_name}</td>
-                                            <td className="px-6 py-4 text-right font-mono text-slate-500">{formatDate(vote.voted_at)}</td>
+                                    latestVotes.map((voter: any) => (
+                                        <tr key={voter.id} className="transition-colors hover:bg-slate-50">
+                                            <td className="px-6 py-4 font-medium text-slate-700">{voter.full_name}</td>
+                                            <td className="px-6 py-4 text-right font-mono text-slate-500">{formatDate(voter.voted_at)}</td>
                                         </tr>
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={2} className="px-6 py-10 text-center text-slate-400">
-                                            Нікого не знайдено
+                                        <td colSpan={2} className="px-6 py-20 text-center text-slate-400 italic">
+                                            Підписантів не знайдено
                                         </td>
                                     </tr>
                                 )}
@@ -196,7 +207,7 @@ export default function Show({ petition, chartData, latestVotes, filters }: any)
                 </div>
 
                 <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm md:p-10">
-                    <h3 className="mb-4 text-lg font-bold text-slate-800">Опис петиції</h3>
+                    <h3 className="mb-4 text-lg font-bold text-slate-800">Текст петиції</h3>
                     <div
                         className="prose prose-slate max-w-none leading-relaxed text-slate-600"
                         dangerouslySetInnerHTML={{ __html: petition.description }}

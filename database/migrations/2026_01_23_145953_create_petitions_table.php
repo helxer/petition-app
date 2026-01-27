@@ -20,7 +20,6 @@ return new class extends Migration
             $table->integer('votes_count')->default(0);
             $table->date('published_at');
             $table->integer('total_pages')->default(0);
-            $table->integer('processed_pages')->default(0);
             $table->timestamps();
         });
     }

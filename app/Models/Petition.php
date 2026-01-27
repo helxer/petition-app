@@ -11,12 +11,20 @@ class Petition extends Model
 
     protected $appends = ['total_votes_collected'];
 
-    public function votes() {
-        return $this->hasMany(PetitionVote::class, 'petition_id', 'petition_id');
+    public function voters()
+    {
+        return $this->belongsToMany(
+            Voter::class,
+            'petition_voter',
+            'petition_id',
+            'voter_id',
+            'petition_id',
+            'id'
+        )->withPivot('voted_at');
     }
 
     public function getTotalVotesCollectedAttribute(): int
     {
-        return $this->votes()->count();
+        return $this->voters()->count();
     }
 }

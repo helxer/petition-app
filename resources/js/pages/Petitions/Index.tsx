@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
-import { useInView } from 'react-intersection-observer';
 import { debounce } from 'lodash';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useInView } from 'react-intersection-observer';
+import { show } from '@/actions/App/Http/Controllers/PetitionController';
+import { formatDate } from '@/lib/utils';
 
 export default function Index({ petitions, filters }: any) {
     const [search, setSearch] = useState(filters.search || '');
@@ -60,7 +62,7 @@ export default function Index({ petitions, filters }: any) {
                     {list.map((petition: any) => (
                         <Link
                             key={petition.id}
-                            href={`/petitions/${petition.petition_id}`}
+                            href={show.url({ petition_id: petition.petition_id })}
                             className="bg-white p-6 rounded-[2rem] border border-slate-200 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all group"
                         >
                             <span className="text-[10px] font-bold text-blue-500 bg-blue-50 px-3 py-1 rounded-full uppercase tracking-tighter">
@@ -78,7 +80,7 @@ export default function Index({ petitions, filters }: any) {
                                 <div className="text-right">
                                     <p className="text-[10px] text-slate-400 font-bold uppercase">Оновлено</p>
                                     <p className="text-xs font-medium text-slate-500">
-                                        {new Date(petition.updated_at).toLocaleString('uk-UA')}
+                                        {formatDate(petition.updated_at, true)}
                                     </p>
                                 </div>
                             </div>
