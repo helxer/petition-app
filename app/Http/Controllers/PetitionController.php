@@ -57,11 +57,7 @@ class PetitionController extends Controller
             ->groupBy('petition_voter.voted_at')
             ->getQuery()
             ->orderBy('x', 'asc')
-            ->get()
-            ->map(fn($item) => [
-                'x' => $item->voted_at,
-                'y' => $item->count
-            ]);
+            ->get();
 
         $votesQuery = $petition->voters()
             ->withPivot('voted_at')
@@ -80,8 +76,9 @@ class PetitionController extends Controller
             ];
         });
 
+
         $isProcessing = DB::table('jobs')
-            ->where('payload', 'like', '%petitionId\";i:' . $petition_id . '%')
+            ->where('payload', 'like', '%petitionId%:' . $petition_id . '%')
             ->exists();
 
         return Inertia::render('Petitions/Show', [
