@@ -44,69 +44,30 @@ class ProcessPetitionPageJob implements ShouldQueue
 
         $parsedVoters = $parser->parseVoters($response->body());
 
-//        $fullNames = collect($parsedVoters)->pluck('full_name')->unique()->toArray();
-//
-//        Voter::upsert(
-//            collect($fullNames)->map(fn($name) => ['full_name' => $name])->toArray(),
-//            ['full_name'],
-//            ['full_name']
-//        );
-//
-//        $votersMap = Voter::whereIn('full_name', $fullNames)->pluck('id', 'full_name');
-//
-//        if ($votersMap->count() !== $parsedVotersCount) {
-//            Log::warning("Failed to sync voters for petition {$this->petitionId} | {$parsedVotersCount} | {$votersMap->count()}", [
-//                'parsedVoters' => $parsedVoters,
-//                'votersMap' => $votersMap
-//            ]);
-//        }
-//
-//        $syncData = [];
-//        foreach ($parsedVoters as $parsedVoter) {
-//            $voterId = $votersMap[$parsedVoter['full_name']];
-//            $syncData[$voterId] = ['voted_at' => $parsedVoter['voted_at']];
-//        }
-//
-//        $petition->voters()->syncWithoutDetaching($syncData);
+        $fullNames = collect($parsedVoters)->pluck('full_name')->unique()->toArray();
 
+        Voter::upsert(
+            collect($fullNames)->map(fn($name) => ['full_name' => $name])->toArray(),
+            ['full_name'],
+            ['full_name']
+        );
+
+        $votersMap = Voter::whereIn('full_name', $fullNames)->pluck('id', 'full_name');
+
+        $syncData = [];
+        foreach ($parsedVoters as $parsedVoter) {
+            $voterId = $votersMap[$parsedVoter['full_name']];
+            $syncData[$voterId] = ['voted_at' => $parsedVoter['voted_at']];
+        }
+
+        $petition->voters()->syncWithoutDetaching($syncData);
 
 //        foreach ($parsedVoters as $parsedVoter) {
-//
 //            $voter = Voter::firstOrCreate(['full_name' => $parsedVoter['full_name']]);
 //
 //            $petition->voters()->syncWithoutDetaching([
 //                $voter->id => ['voted_at' => $parsedVoter['voted_at']]
 //            ]);
 //        }
-
-
-        foreach ($parsedVoters as $parsedVoter) {
-
-            $originalName = $parsedVoter['full_name'];
-            $nameToSearch = $originalName;
-
-            while (true) {
-                $voter = Voter::where('full_name', $nameToSearch)->first();
-
-                if ($voter) {
-                    $alreadySigned = $petition->voters()
-                        ->where('voter_id', $voter->id)
-                        ->exists();
-
-                    if ($alreadySigned) {
-                        $nameToSearch = "_" . $nameToSearch;
-                        continue;
-                    }
-                } else {
-                    $voter = Voter::create(['full_name' => $nameToSearch]);
-                }
-
-                break;
-            }
-
-            $petition->voters()->syncWithoutDetaching([
-                $voter->id => ['voted_at' => $parsedVoter['voted_at']]
-            ]);
-        }
     }
 }
