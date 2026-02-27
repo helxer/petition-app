@@ -1,5 +1,6 @@
 import { Link, usePage, router } from '@inertiajs/react';
 import React from 'react';
+import FeedbackModal from '@/components/FeedbackModal';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     // Отримуємо дані про користувача з глобальних пропсів Inertia
@@ -98,6 +99,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
             {/* Контент сторінки */}
             <main>{children}</main>
+
+            <FeedbackModal/>
         </div>
     );
 }

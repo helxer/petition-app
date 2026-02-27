@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\PetitionController;
 use App\Http\Controllers\VoterListController;
+use App\Http\Controllers\FeedbackController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -25,4 +26,5 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/my-list/toggle', [VoterListController::class, 'toggleVoter'])->name('api.my-list.toggle');
     Route::post('/api/my-list/clear', [VoterListController::class, 'clearList'])->name('api.my-list.clear');
     Route::post('/api/petitions/{petition_id}/note', [PetitionController::class, 'saveNote'])->name('api.petitions.saveNote');
+    Route::post('/api/feedback/store', [FeedbackController::class, 'store'])->name('api.feedback.store')->middleware('throttle:3,1');
 });
