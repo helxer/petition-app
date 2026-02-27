@@ -130,7 +130,7 @@ class PetitionController extends Controller
 
         DB::table('user_petition_notes')->updateOrInsert(
             ['user_id' => auth()->id(), 'petition_id' => $petition_id],
-            ['content' => $request->content, 'updated_at' => now()]
+            ['content' => strip_tags($request->content), 'updated_at' => now()]
         );
 
         return response()->json(['status' => 'saved']);

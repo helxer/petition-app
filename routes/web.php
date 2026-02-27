@@ -16,6 +16,8 @@ Route::post('/petitions/check', [PetitionController::class, 'check'])->name('pet
 Route::get('/petitions/{petition_id}', [PetitionController::class, 'show'])->name('petitions.show');
 Route::get('/petitions/{petition_id}/compare/{user_id}', [VoterListController::class, 'compare'])->name('petitions.compare');
 
+Route::post('/api/feedback/store', [FeedbackController::class, 'store'])->name('api.feedback.store')->middleware('throttle:3,1');
+
 Route::middleware(['auth'])->group(function () {
     Route::get('/my-list/manage', [VoterListController::class, 'manage'])->name('voter-list.manage');
     Route::get('/my-list/leaderboard', [VoterListController::class, 'leaderboard'])->name('voter-list.leaderboard');
@@ -26,5 +28,4 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/api/my-list/toggle', [VoterListController::class, 'toggleVoter'])->name('api.my-list.toggle');
     Route::post('/api/my-list/clear', [VoterListController::class, 'clearList'])->name('api.my-list.clear');
     Route::post('/api/petitions/{petition_id}/note', [PetitionController::class, 'saveNote'])->name('api.petitions.saveNote');
-    Route::post('/api/feedback/store', [FeedbackController::class, 'store'])->name('api.feedback.store')->middleware('throttle:3,1');
 });
