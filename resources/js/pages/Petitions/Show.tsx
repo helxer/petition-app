@@ -16,10 +16,11 @@ import { show, refresh } from '@/actions/App/Http/Controllers/PetitionController
 import { compare } from '@/actions/App/Http/Controllers/VoterListController';
 import MainLayout from '@/layouts/MainLayout';
 import { formatDate } from '@/lib/utils';
+import PetitionNote from '@/components/PetitionNote';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ChartTitle, Tooltip, Legend);
 
-export default function Show({ auth, petition, chartData, latestVotes, filters, voterListStats, isProcessing }: any) {
+export default function Show({ auth, petition, chartData, latestVotes, filters, voterListStats, userNote, isProcessing }: any) {
     const [search, setSearch] = useState(filters.search || '');
     const [loading, setLoading] = useState(false);
     const [pollingInterval, setPollingInterval] = useState(5 * 60 * 1000);
@@ -173,6 +174,8 @@ export default function Show({ auth, petition, chartData, latestVotes, filters, 
                         </Link>
                     )}
 
+                    <PetitionNote petitionId={petition.petition_id} initialNote={userNote} />
+
                     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                         <h3 className="mb-4 px-2 text-lg font-bold text-slate-800">Динаміка голосування</h3>
                         <div className="h-[320px]">
@@ -193,7 +196,7 @@ export default function Show({ auth, petition, chartData, latestVotes, filters, 
                     <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
                         <div className="mb-6 flex flex-col justify-between gap-4 md:flex-row md:items-center">
                             <h3 className="px-2 text-lg font-bold text-slate-800">
-                                {search ? 'Результати пошуку' : 'Останні підписанти'}
+                                {search ? 'Результати пошуку' : 'Підписанти'}
                             </h3>
                             <div className="relative">
                                 <input

@@ -101,12 +101,18 @@ class PetitionController extends Controller
             ->where('payload', 'like', '%petitionId%:' . $petition_id . '%')
             ->exists();
 
+        $userNote = DB::table('user_petition_notes')
+            ->where('user_id', auth()->id())
+            ->where('petition_id', $petition_id)
+            ->value('content') ?? '';
+
         return Inertia::render('Petitions/Show', [
             'petition' => $petition,
             'chartData' => $chartData,
             'latestVotes' => $latestVotes,
             'isProcessing' => $isProcessing,
             'voterListStats' => $voterListStats,
+            'userNote' => $userNote,
             'filters' => $request->only(['search'])
         ]);
     }
@@ -116,5 +122,17 @@ class PetitionController extends Controller
         Artisan::call('petition:parse', ['id' => $petition_id]);
 
         return back();
+    }
+
+    public function saveNote(Request $request, $petition_id)
+    {
+        $request->validate(['content' => 'nullable|string']);
+
+        DB::table('user_petition_notes')->updateOrInsert(
+            ['user_id' => auth()->id(), 'petition_id' => $petition_id],
+            ['content' => $request->content, 'updated_at' => now()]
+        );
+
+        return response()->json(['status' => 'saved']);
     }
 }

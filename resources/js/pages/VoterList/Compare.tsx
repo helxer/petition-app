@@ -1,13 +1,40 @@
 import React, { useState } from 'react';
 import MainLayout from '@/layouts/MainLayout';
 import { Head } from '@inertiajs/react';
+import { Line } from 'react-chartjs-2'; // Додаємо графік
+import {
+    Chart as ChartJS,
+    CategoryScale,
+    LinearScale,
+    PointElement,
+    LineElement,
+    Title,
+    Tooltip,
+    Legend,
+} from 'chart.js';
+import { formatDate } from '@/lib/utils';
+import PetitionNote from '@/components/PetitionNote';
 
-export default function Compare({ petition, targetUser, voters, stats }: any) {
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+
+export default function Compare({ petition, targetUser, voters, stats, compareChartData, userNote }: any) {
     const [searchTerm, setSearchTerm] = useState('');
 
     const filteredVoters = voters.filter((voter: any) =>
         voter.full_name.toLowerCase().includes(searchTerm.toLowerCase())
     );
+
+    const chartData = {
+        labels: compareChartData.map((d: any) => formatDate(d.x)),
+        datasets: [{
+            label: 'Підписи',
+            data: compareChartData.map((d: any) => d.y),
+            borderColor: 'rgb(59, 130, 246)',
+            backgroundColor: 'rgba(59, 130, 246, 0.5)',
+            tension: 0.3,
+            pointRadius: 4,
+        }]
+    };
 
     return (
         <MainLayout>
@@ -37,14 +64,25 @@ export default function Compare({ petition, targetUser, voters, stats }: any) {
                                     <span className="font-bold text-green-700">{stats.signed} осіб</span>
                                 </div>
                             </div>
-                            {/*<div className="text-right">*/}
-                            {/*    <div className="text-3xl font-black text-blue-600">*/}
-                            {/*        {Math.round((stats.signed / stats.total) * 100) || 0}%*/}
-                            {/*    </div>*/}
-                            {/*    <div className="text-xs font-bold text-slate-400 uppercase tracking-widest">Конверсія</div>*/}
-                            {/*</div>*/}
                         </div>
                     </div>
+
+                    {compareChartData.length > 0 && (
+                        <div className="rounded-xl bg-white p-8 shadow-sm border border-slate-200">
+                            <div className="h-[300px]">
+                                <Line options={{
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { display: false } },
+                                    scales: {
+                                        y: { beginAtZero: true, ticks: { precision: 0 } },
+                                    },
+                                }} data={chartData} />
+                            </div>
+                        </div>
+                    )}
+
+                    <PetitionNote petitionId={petition.petition_id} initialNote={userNote} />
 
                     <div className="sticky top-20 z-10">
                         <div className="relative group">
@@ -76,7 +114,14 @@ export default function Compare({ petition, targetUser, voters, stats }: any) {
                                 filteredVoters.map((voter: any) => (
                                     <div key={voter.id} className="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors">
                                         <div className="flex flex-col">
-                                            <span className="font-bold text-slate-800">{voter.full_name}</span>
+                                            <div className="flex items-center gap-3">
+                                                <span className="font-bold text-slate-800">{voter.full_name}</span>
+                                                {voter.is_signed && voter.voted_at && (
+                                                    <span className="text-[11px] font-medium text-blue-500 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                                                        {formatDate(voter.voted_at)}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
 
                                         {voter.is_signed ? (

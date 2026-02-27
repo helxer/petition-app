@@ -35,11 +35,31 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                                 <Link
                                     href="/my-list/manage"
                                     className={`text-sm font-bold transition-colors ${
-                                        url.startsWith('/my-list') ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
+                                        url.startsWith('/my-list/manage') ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
                                     }`}
                                 >
                                     🎯 Мій список
                                 </Link>
+                            )}
+                            {auth.user && auth.hasVoters && (
+                                <>
+                                    <Link
+                                        href="/my-list/progress"
+                                        className={`text-sm font-bold transition-colors ${
+                                            url.startsWith('/my-list/progress') ? 'text-blue-600' : 'text-slate-600 hover:text-blue-600'
+                                        }`}
+                                    >
+                                        📉 Прогрес
+                                    </Link>
+                                    <Link
+                                        href="/my-list/leaderboard"
+                                        className={`text-sm font-bold transition-colors ${
+                                            url.startsWith('/my-list/leaderboard') ? 'text-amber-600' : 'text-slate-600 hover:text-amber-600'
+                                        }`}
+                                    >
+                                        🏆Лідерборд
+                                    </Link>
+                                </>
                             )}
                         </div>
 

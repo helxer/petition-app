@@ -40,6 +40,9 @@ class HandleInertiaRequests extends Middleware
             'name' => config('app.name'),
             'auth' => [
                 'user' => $request->user(),
+                'hasVoters' => $request->user() && $request->user()->voterList
+                    ? $request->user()->voterList->voters()->exists()
+                    : false,
             ],
         ];
     }
