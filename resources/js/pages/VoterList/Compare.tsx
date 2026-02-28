@@ -43,7 +43,7 @@ export default function Compare({ petition, targetUser, voters, stats, compareCh
                 <div className="mx-auto max-w-5xl space-y-6">
 
                     {/* Шапка з інфою */}
-                    <div className="mb-8 rounded-xl bg-white p-8 shadow-sm border border-slate-200">
+                    <div className="rounded-xl bg-white p-8 shadow-sm border border-slate-200">
                         <div className="flex justify-between items-start">
                             <div>
                                 <h1 className="text-2xl font-black text-slate-900 leading-tight">
@@ -67,6 +67,8 @@ export default function Compare({ petition, targetUser, voters, stats, compareCh
                         </div>
                     </div>
 
+                    <PetitionNote petitionId={petition.petition_id} initialNote={userNote} />
+
                     {compareChartData.length > 0 && (
                         <div className="rounded-xl bg-white p-8 shadow-sm border border-slate-200">
                             <div className="h-[300px]">
@@ -81,8 +83,6 @@ export default function Compare({ petition, targetUser, voters, stats, compareCh
                             </div>
                         </div>
                     )}
-
-                    <PetitionNote petitionId={petition.petition_id} initialNote={userNote} />
 
                     <div className="sticky top-20 z-10">
                         <div className="relative group">
@@ -112,7 +112,7 @@ export default function Compare({ petition, targetUser, voters, stats, compareCh
                         <div className="divide-y divide-slate-100">
                             {filteredVoters.length > 0 ? (
                                 filteredVoters.map((voter: any) => (
-                                    <div key={voter.id} className="flex items-center justify-between p-5 hover:bg-slate-50 transition-colors">
+                                    <div key={voter.id} className="flex gap-1 items-center justify-between p-5 hover:bg-slate-50 transition-colors">
                                         <div className="flex flex-col">
                                             <div className="flex items-center gap-3">
                                                 <span className="font-bold text-slate-800">{voter.full_name}</span>

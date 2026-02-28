@@ -75,14 +75,14 @@ export default function FeedbackModal() {
                                     <button
                                         onClick={() => setIsOpen(false)}
                                         disabled={loading}
-                                        className="flex-1 py-3 font-bold text-slate-400 disabled:invisible"
+                                        className="flex-1 py-3 font-bold rounded-xl bg-slate-100 px-4 text-sm text-slate-600 hover:bg-red-50 hover:text-red-600 transition-all"
                                     >
                                         Скасувати
                                     </button>
                                     <button
                                         onClick={handleSubmit}
                                         disabled={message.length < 5 || loading}
-                                        className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-bold shadow-lg shadow-blue-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:bg-blue-700"
                                     >
                                         {loading ? (
                                             <>
