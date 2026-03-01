@@ -31,7 +31,11 @@ class ProcessPetitionPageJob implements ShouldQueue
 
         $url = "https://petition.president.gov.ua/petition/{$this->petitionId}/votes/{$this->pageNumber}/json";
 
-        $response = Http::withHeaders([
+        $response = Http::withOptions([
+            'proxy' => 'socks5h://127.0.0.1:9050',
+            'connect_timeout' => 10,
+            'timeout' => 30,
+        ])->withHeaders([
             'X-Requested-With' => 'XMLHttpRequest',
             'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36'
         ])->get($url);
