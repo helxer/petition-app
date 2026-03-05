@@ -18,28 +18,18 @@ class ParsePetitionCommand extends Command
         $petitionId = (int) $this->argument('id');
         $this->info("Початок аналізу петиції #{$petitionId}...");
 
-        $htmlResponse = Http::withOptions([
-            'proxy' => 'socks5h://127.0.0.1:9050',
-            'connect_timeout' => 10,
-            'timeout' => 30,
-        ])->withHeaders([
-            'X-Requested-With' => 'XMLHttpRequest',
-            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36'
-        ])->get("https://petition.president.gov.ua/petition/{$petitionId}");
+        $petitionUrl = "https://petition.president.gov.ua/petition/{$petitionId}";
+
+        $htmlResponse = $parser->getWithFailover($petitionUrl, $petitionUrl);
 
         if ($htmlResponse->failed()) {
             $this->error("Не вдалося отримати доступ до головної сторінки петиції.");
             return Command::FAILURE;
         }
 
-        $jsonResponse = Http::withOptions([
-            'proxy' => 'socks5h://127.0.0.1:9050',
-            'connect_timeout' => 10,
-            'timeout' => 30,
-        ])->withHeaders([
-            'X-Requested-With' => 'XMLHttpRequest',
-            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0 Safari/537.36'
-        ])->get("https://petition.president.gov.ua/petition/{$petitionId}/votes/1/json");
+        $pageUrl = "https://petition.president.gov.ua/petition/{$petitionId}/votes/1/json";
+
+        $jsonResponse = $parser->getWithFailover($pageUrl, $petitionUrl);
 
         if ($jsonResponse->failed()) {
             $this->error("Не вдалося отримати дані голосування (JSON).");
