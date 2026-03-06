@@ -22,7 +22,7 @@ class ParsePetitionCommand extends Command
 
         $htmlResponse = $parser->getWithFailover($petitionUrl, $petitionUrl);
 
-        if ($htmlResponse->failed()) {
+        if (!$htmlResponse || $htmlResponse->failed()) {
             $this->error("Не вдалося отримати доступ до головної сторінки петиції.");
             return Command::FAILURE;
         }
@@ -31,7 +31,7 @@ class ParsePetitionCommand extends Command
 
         $jsonResponse = $parser->getWithFailover($pageUrl, $petitionUrl);
 
-        if ($jsonResponse->failed()) {
+        if (!$jsonResponse || $jsonResponse->failed()) {
             $this->error("Не вдалося отримати дані голосування (JSON).");
             return Command::FAILURE;
         }

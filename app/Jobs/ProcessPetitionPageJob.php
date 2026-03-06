@@ -18,7 +18,7 @@ class ProcessPetitionPageJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 3;
-    public $backoff = 60;
+    public $backoff = 30;
 
     public function __construct(
         protected int $petitionId,
@@ -34,7 +34,7 @@ class ProcessPetitionPageJob implements ShouldQueue
 
         $response = $parser->getWithFailover($pageUrl, $petitionUrl);
 
-        if ($response->failed()) {
+        if (!$response || $response->failed()) {
             Log::error("Failed to fetch page {$this->pageNumber} for petition {$this->petitionId}");
             $this->release($this->backoff);
             return;
