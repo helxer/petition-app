@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
@@ -112,13 +113,28 @@ class VoterParserService
     {
         $response = $this->makeRequest($url, $referer, 'socks5h://127.0.0.1:9050', 'Tor');
 
-        if (!$response || $response->failed()) {
-            $proxies = config('services.webshare.proxies');
-            $randomProxy = $proxies[array_rand($proxies)];
-            $response = $this->makeRequest($url, $referer, $randomProxy, 'Webshare');
+//        if (!$response || $response->failed()) {
+//            $proxies = config('services.webshare.proxies');
+//            $randomProxy = $proxies[array_rand($proxies)];
+//            $response = $this->makeRequest($url, $referer, $randomProxy, 'Webshare');
+//        }
+
+        if ((!$response || $response->failed()) && !Cache::has('tor_restarting')) {
+            Cache::put('tor_restarting', true, 120);
+            $this->restartTor();
         }
 
         return $response;
+    }
+
+    public function restartTor()
+    {
+        try {
+            shell_exec('sudo /usr/bin/systemctl restart tor');
+            sleep(3);
+        } catch (\Exception $e) {
+            Log::error("Failed to restart Tor: " . $e->getMessage());
+        }
     }
 
     private function makeRequest($url, $referer, $proxy, $channelName)
