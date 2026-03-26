@@ -20,19 +20,19 @@ class ParsePetitionCommand extends Command
 
         $petitionUrl = "https://petition.president.gov.ua/petition/{$petitionId}";
 
-        $htmlResponse = $parser->getWithFailover($petitionUrl, $petitionUrl);
-
-        if (!$htmlResponse || $htmlResponse->failed()) {
-            $this->error("Не вдалося отримати доступ до головної сторінки петиції.");
-            return Command::FAILURE;
-        }
-
         $pageUrl = "https://petition.president.gov.ua/petition/{$petitionId}/votes/1/json";
 
         $jsonResponse = $parser->getWithFailover($pageUrl, $petitionUrl);
 
         if (!$jsonResponse || $jsonResponse->failed()) {
             $this->error("Не вдалося отримати дані голосування (JSON).");
+            return Command::FAILURE;
+        }
+
+        $htmlResponse = $parser->getWithFailover($petitionUrl, $petitionUrl);
+
+        if (!$htmlResponse || $htmlResponse->failed()) {
+            $this->error("Не вдалося отримати доступ до головної сторінки петиції.");
             return Command::FAILURE;
         }
 
