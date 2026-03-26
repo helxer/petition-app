@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\DomCrawler\Crawler;
@@ -119,8 +118,7 @@ class VoterParserService
 //            $response = $this->makeRequest($url, $referer, $randomProxy, 'Webshare');
 //        }
 
-        if ((!$response || $response->failed()) && !Cache::has('tor_restarting')) {
-            Cache::put('tor_restarting', true, 120);
+        if (!$response || $response->failed()) {
             $this->restartTor();
         }
 
