@@ -20,6 +20,13 @@ class ParsePetitionCommand extends Command
 
         $petitionUrl = "https://petition.president.gov.ua/petition/{$petitionId}";
 
+//        $htmlResponse = $parser->getWithFailover($petitionUrl, $petitionUrl);
+//
+//        if (!$htmlResponse || $htmlResponse->failed()) {
+//            $this->error("Не вдалося отримати доступ до головної сторінки петиції.");
+//            return Command::FAILURE;
+//        }
+
         $pageUrl = "https://petition.president.gov.ua/petition/{$petitionId}/votes/1/json";
 
         $jsonResponse = $parser->getWithFailover($pageUrl, $petitionUrl);
@@ -29,21 +36,14 @@ class ParsePetitionCommand extends Command
             return Command::FAILURE;
         }
 
-        $htmlResponse = $parser->getWithFailover($petitionUrl, $petitionUrl);
-
-        if (!$htmlResponse || $htmlResponse->failed()) {
-            $this->error("Не вдалося отримати доступ до головної сторінки петиції.");
-            return Command::FAILURE;
-        }
-
         $data = $jsonResponse->json();
-        $meta = $parser->parseMetadata($htmlResponse->body());
+//        $meta = $parser->parseMetadata($htmlResponse->body());
 
-        if ($meta['title'] === '404. Такої сторінки не існує') {
-            $this->error('404. Такої сторінки не існує');
-            Petition::where('petition_id', $petitionId)->delete();
-            return Command::FAILURE;
-        }
+//        if ($meta['title'] === '404. Такої сторінки не існує') {
+//            $this->error('404. Такої сторінки не існує');
+//            Petition::where('petition_id', $petitionId)->delete();
+//            return Command::FAILURE;
+//        }
 
         $lastPage = $parser->getLastPage($data['pag_html'] ?? '');
 
@@ -52,7 +52,7 @@ class ParsePetitionCommand extends Command
 
         $petition = Petition::updateOrCreate(
             ['petition_id' => $petitionId],
-            array_merge($meta, [
+            array_merge(/*$meta, */[
                 'total_pages'     => $lastPage,
             ])
         );
