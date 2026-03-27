@@ -147,17 +147,17 @@ class VoterParserService
                 'proxy' => $proxy,
                 'connect_timeout' => 30,
                 'timeout' => 60,
-            ])->retry(2)->withHeaders([
+            ])->withHeaders([
                 'X-Requested-With' => 'XMLHttpRequest',
-                'Accept'           => 'application/json, text/javascript, */*; q=0.01',
+//                'Accept'           => 'application/json, text/javascript, */*; q=0.01',
                 'User-Agent'       => $randomUserAgent,
-                'Referer'          => $referer,
-                'Origin'           => $baseUrl,
-                'Connection'       => 'keep-alive',
-                'Sec-Fetch-Dest'   => 'empty',
-                'Sec-Fetch-Mode'   => 'cors',
-                'Sec-Fetch-Site'   => 'same-origin',
-                'Accept-Language'  => 'uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7',
+//                'Referer'          => $referer,
+//                'Origin'           => $baseUrl,
+//                'Connection'       => 'keep-alive',
+//                'Sec-Fetch-Dest'   => 'empty',
+//                'Sec-Fetch-Mode'   => 'cors',
+//                'Sec-Fetch-Site'   => 'same-origin',
+//                'Accept-Language'  => 'uk-UA,uk;q=0.9,en-US;q=0.8,en;q=0.7',
             ])->get($url);
 
         } catch (\Exception $e) {
