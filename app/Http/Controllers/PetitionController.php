@@ -30,6 +30,11 @@ class PetitionController extends Controller
     {
         $request->validate(['petition_id' => 'required|integer']);
         $petitionId = $request->petition_id;
+        $user = auth()->user();
+
+        if (!$user || !in_array($user->id, [1, 2])) {
+            return redirect()->route('home')->with('error', 'Оновлення даних обмежено через технічні причини. Спробуйте пізніше.');
+        }
 
         $petition = Petition::where('petition_id', $petitionId)->first();
 
@@ -119,6 +124,12 @@ class PetitionController extends Controller
 
     public function refresh($petition_id)
     {
+        $user = auth()->user();
+
+        if (!$user || !in_array($user->id, [1, 2])) {
+            return back()->with('error', 'Оновлення даних обмежено через технічні причини. Спробуйте пізніше.');
+        }
+
         Artisan::call('petition:parse', ['id' => $petition_id]);
 
         return back();

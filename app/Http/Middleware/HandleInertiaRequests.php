@@ -44,6 +44,11 @@ class HandleInertiaRequests extends Middleware
                     ? $request->user()->voterList->voters()->exists()
                     : false,
             ],
+            'flash' => [
+                'success' => $request->session()->get('success'),
+                'error' => $request->session()->get('error'),
+                'warning' => $request->session()->get('warning'),
+            ],
         ];
     }
 }

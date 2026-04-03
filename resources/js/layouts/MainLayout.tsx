@@ -1,11 +1,24 @@
 import { Link, usePage, router } from '@inertiajs/react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FeedbackModal from '@/components/FeedbackModal';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const [showAlert, setShowAlert] = useState(false);
     const { props, url } = usePage() as any;
-    const { auth } = props as any;
+    const { auth, flash } = props as any;
+
+    useEffect(() => {
+        if (flash?.error || flash?.success) {
+            setShowAlert(true);
+
+            const timer = setTimeout(() => {
+                setShowAlert(false);
+            }, 8000);
+
+            return () => clearTimeout(timer);
+        }
+    }, [flash]);
 
     const handleLogout = (e: React.FormEvent) => {
         e.preventDefault();
@@ -97,7 +110,36 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
                     </div>
                 )}
             </nav>
+            <div className="fixed bottom-5 right-5 z-[100] flex flex-col gap-3 w-full max-w-sm px-4">
+                {showAlert && (flash?.error || flash?.success) && (
+                    <div className={`
+                    relative flex items-start gap-3 p-4 rounded-2xl shadow-2xl border backdrop-blur-md
+                    animate-in slide-in-from-right-full duration-300
+                    ${flash.error
+                        ? 'bg-red-50/90 border-red-200 text-red-800'
+                        : 'bg-emerald-50/90 border-emerald-200 text-emerald-800'}
+                `}>
+                        <div className="text-xl">
+                            {flash.error ? '🚫' : '✅'}
+                        </div>
 
+                        <div className="flex-1 pr-6">
+                            <p className="text-sm font-bold leading-tight">
+                                {flash.error || flash.success}
+                            </p>
+                        </div>
+
+                        <button
+                            onClick={() => setShowAlert(false)}
+                            className="absolute top-3 right-3 opacity-50 hover:opacity-100 transition-opacity"
+                        >
+                            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+                )}
+            </div>
             <main>{children}</main>
             <FeedbackModal />
         </div>
