@@ -110,7 +110,7 @@ class VoterParserService
 
     public function getWithFailover($url, $referer)
     {
-        $response = $this->makeRequest($url, $referer, 'socks5h://127.0.0.1:9050', 'Tor');
+        $response = $this->makeRequest($url, $referer);
 
 //        if (!$response || $response->failed()) {
 //            $proxies = config('services.webshare.proxies');
@@ -135,7 +135,7 @@ class VoterParserService
         }
     }
 
-    private function makeRequest($url, $referer, $proxy, $channelName)
+    private function makeRequest($url, $referer)
     {
         try {
             $userAgents = config('services.user_agents');
@@ -144,7 +144,7 @@ class VoterParserService
             $baseUrl = "https://petition.president.gov.ua";
 
             return Http::withOptions([
-                'proxy' => $proxy,
+//                'proxy' => $proxy,
                 'connect_timeout' => 30,
                 'timeout' => 60,
             ])->withHeaders([
